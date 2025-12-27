@@ -18,10 +18,15 @@ class BoardState {
   }
 }
 
-class BoardNotifier extends StateNotifier<BoardState> {
-  BoardNotifier() : super(const BoardState());
-
+// DEĞİŞİKLİK: StateNotifier yerine Notifier kullanıyoruz.
+class BoardNotifier extends Notifier<BoardState> {
   final _uuid = const Uuid();
+
+  // DEĞİŞİKLİK: Constructor yerine build() metodu ile başlangıç state'i verilir.
+  @override
+  BoardState build() {
+    return const BoardState();
+  }
 
   void addItem(String imagePath) {
     final newItem = WishItem(
@@ -60,19 +65,37 @@ class BoardNotifier extends StateNotifier<BoardState> {
     );
   }
 
-  void bringToFront(String id) {
-    if (state.items.isEmpty) return;
-    final int maxZ = state.items.fold(
-      0,
-      (prev, e) => e.zIndex > prev ? e.zIndex : prev,
-    );
-
+  void updateItemNote(String id, String newNote) {
     state = state.copyWith(
       items: [
         for (final item in state.items)
-          if (item.id == id) item.copyWith(zIndex: maxZ + 1) else item,
+          if (item.id == id) item.copyWith(note: newNote) else item,
       ],
     );
+  }
+
+  void bringToFront(String id) {
+    final index = state.items.indexWhere((i) => i.id == id);
+    if (index == -1 || index == state.items.length - 1) return;
+
+    final item = state.items[index];
+    final newItems = List<WishItem>.from(state.items)
+      ..removeAt(index)
+      ..add(item);
+
+    state = state.copyWith(items: newItems);
+  }
+
+  void sendToBack(String id) {
+    final index = state.items.indexWhere((i) => i.id == id);
+    if (index == -1 || index == 0) return;
+
+    final item = state.items[index];
+    final newItems = List<WishItem>.from(state.items)
+      ..removeAt(index)
+      ..insert(0, item);
+
+    state = state.copyWith(items: newItems);
   }
 
   void removeItem(String id) {
@@ -83,6 +106,7 @@ class BoardNotifier extends StateNotifier<BoardState> {
   }
 }
 
-final boardProvider = StateNotifierProvider<BoardNotifier, BoardState>((ref) {
-  return BoardNotifier();
-});
+// DEĞİŞİKLİK: StateNotifierProvider yerine NotifierProvider kullanıyoruz.
+final boardProvider = NotifierProvider<BoardNotifier, BoardState>(
+  BoardNotifier.new,
+);
