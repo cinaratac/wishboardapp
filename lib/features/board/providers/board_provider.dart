@@ -18,20 +18,22 @@ class BoardState {
   }
 }
 
-// DEĞİŞİKLİK: StateNotifier yerine Notifier kullanıyoruz.
+// DÜZELTME: StateNotifier yerine 'Notifier' kullanıyoruz.
 class BoardNotifier extends Notifier<BoardState> {
   final _uuid = const Uuid();
 
-  // DEĞİŞİKLİK: Constructor yerine build() metodu ile başlangıç state'i verilir.
+  // DÜZELTME: Constructor yerine build() metodu ile başlangıç durumu verilir.
   @override
   BoardState build() {
     return const BoardState();
   }
 
-  void addItem(String imagePath) {
+  // Fotoğraf ekleme (Merkeze veya belirtilen konuma)
+  void addItem(String imagePath, Offset startPosition) {
     final newItem = WishItem(
       id: _uuid.v4(),
       imagePath: imagePath,
+      position: startPosition,
       zIndex: state.items.length,
     );
     state = state.copyWith(
@@ -106,7 +108,7 @@ class BoardNotifier extends Notifier<BoardState> {
   }
 }
 
-// DEĞİŞİKLİK: StateNotifierProvider yerine NotifierProvider kullanıyoruz.
+// DÜZELTME: StateNotifierProvider yerine 'NotifierProvider' kullanıyoruz.
 final boardProvider = NotifierProvider<BoardNotifier, BoardState>(
   BoardNotifier.new,
 );
